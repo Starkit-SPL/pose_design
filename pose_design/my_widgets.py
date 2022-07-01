@@ -12,10 +12,11 @@ class Point:
 
 class MySlider():
 
-    def __init__(self, window, button_apply, point, slider_range, name):
+    def __init__(self, window, button_apply, point, slider_range, name, start_value):
         self.window = window
         self.point = point
         self.slider_range = list(slider_range)
+        self.start_value = start_value
         self.button_apply = button_apply
         self.name = name
         self.make_line()
@@ -33,7 +34,7 @@ class MySlider():
     def make_line(self):
         self.line = QLineEdit(self.window)
         self.line.move(self.point.x, self.point.y + 30)
-        self.line.setText(str(int((self.slider_range[0] + self.slider_range[-1])/2)))
+        self.line.setText(str(int(self.start_value)))
 
     def make_slider(self):
         self.slider = QSlider(Qt.Horizontal, self.window)
@@ -43,6 +44,7 @@ class MySlider():
         self.slider.setTickPosition(QSlider.TicksBothSides)
         self.slider.move(self.point.x, self.point.y)
         self.slider.setGeometry(self.point.x, self.point.y, 50, 20)
+        self.slider.setValue(int(self.start_value))
         self.slider.adjustSize()
 
     def value(self):

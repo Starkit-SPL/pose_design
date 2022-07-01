@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import Qt
+from pathlib import Path
 
 import sys
 
@@ -11,6 +12,33 @@ joints_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElb
                 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipRoll', 'RHipPitch',
                 'RKneePitch', 'RAnklePitch', 'RAnkleRoll', 'RShoulderPitch', 'RShoulderRoll',
                 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'LHand', 'RHand']
+
+start_positions = [5.835615623007271e-17
+                   - 6.631492244224546e-09,
+                   5.46203182238969e-07,
+                   -3.0801841112426676e-12,
+                   1.016807331666314e-07,
+                   -1.1239626473980024e-07,
+                   3.875324239288602e-08,
+                   -3.6887286114506423e-07,
+                   3.108395389972429e-07,
+                   -4.951590426571784e-07,
+                   -5.005954903936072e-07,
+                   -5.14188116085279e-07,
+                   -3.088730693434627e-07,
+                   -3.1083948215382406e-07,
+                   -4.951590995005972e-07,
+                   -5.00595547237026e-07,
+                   -5.141881729286979e-07,
+                   3.0887309776517213e-07,
+                   5.46203182238969e-07,
+                   3.0789979940659684e-12,
+                   -1.016807331666314e-07,
+                   1.1239625763437289e-07,
+                   -3.875324239288602e-08,
+                   -2.2158275214678724e-11,
+                   -2.2157387036259024e-11,
+                   ]
 
 # This range is for NAO5, check for NAO6
 joints_ranges = [range(-115, 115), range(-36, 28), range(-118, 118),
@@ -53,14 +81,51 @@ class Window(QMainWindow):
 
         self.buttons = self.make_buttons()
 
+        self.label = QtWidgets.QLineEdit(self)
+        self.label.move(450, 810)
+        self.label.setGeometry(450, 810, 100, 30)
+        # self.label.setText('Hi')
+        # self.label.adjustSize()
+
         self.sliders = self.make_sliders()
         self.joints = self.make_joints()
+
+    def save(self):
+        fn = self.label.text()
+        home = Path.cwd()
+        if fn is None or fn == '':
+            filename = Path(home, 'pose.txt')
+        else:
+            filename = Path(home, fn)
+        pose = self.getPose()
+        f = open(filename, 'w')
+        for tmp in pose:
+            f.write(str(tmp) + '\n')
+        f.close()
+
+    def load(self):
+        fn = self.label.text()
+        home = Path.cwd()
+        if fn is None or fn == '':
+            filename = Path(home, 'pose.txt')
+        else:
+            filename = Path(home, fn)
+        pose = [0] * 25
+        f = open(filename, 'r')
+        num = 0
+        for line in f:
+            pose[num] = int(line)
+            num += 1
+        f.close()
+        self.setPose(pose)
 
     def make_buttons(self):
         class Buttons:
             apply = self.make_button('Apply', Point(50, 890))
             send_pose = self.make_button('Send Pose', Point(250, 890), self.send)
-            #receive_pose = self.make_button('Receive Pose', Point(450, 890), self.receive)
+            save = self.make_button('Save', Point(450, 890), self.save)
+            load = self.make_button('Load', Point(450, 850), self.load)
+            # receive_pose = self.make_button('Receive Pose', Point(450, 890), self.receive)
 
         return Buttons
         # return {'apply': button_apply, 'receive': button_receive_pose, 'send': button_send_pose}
@@ -74,65 +139,87 @@ class Window(QMainWindow):
             btn.clicked.connect(signal)
         return btn
 
-
     def make_sliders(self):
         class Sliders:
             SldHeadYaw = self.make_slider(name='HeadYaw', point=Point(275, 25),
-                                          sld_range=joints_ranges[joints_names.index('HeadYaw')])
+                                          sld_range=joints_ranges[joints_names.index('HeadYaw')],
+                                          start_value=start_positions[joints_names.index('HeadYaw')])
             SldHeadPitch = self.make_slider(name='HeadPitch', point=Point(275, 135),
-                                            sld_range=joints_ranges[joints_names.index('HeadPitch')])
+                                            sld_range=joints_ranges[joints_names.index('HeadPitch')],
+                                            start_value=start_positions[joints_names.index('HeadPitch')])
             SldLShoulderPitch = self.make_slider(name='LShoulderPitch', point=Point(50, 245),
-                                                 sld_range=joints_ranges[joints_names.index('LShoulderPitch')])
+                                                 sld_range=joints_ranges[joints_names.index('LShoulderPitch')],
+                                                 start_value=start_positions[joints_names.index('LShoulderPitch')])
             SldRShoulderPitch = self.make_slider(name='RShoulderPitch', point=Point(450, 245),
-                                                 sld_range=joints_ranges[joints_names.index('RShoulderPitch')])
+                                                 sld_range=joints_ranges[joints_names.index('RShoulderPitch')],
+                                                 start_value=start_positions[joints_names.index('RShoulderPitch')])
             SldLHipYawPitch = self.make_slider(name='LHipYawPitch', point=Point(260, 245),
-                                               sld_range=joints_ranges[joints_names.index('LHipYawPitch')])
+                                               sld_range=joints_ranges[joints_names.index('LHipYawPitch')],
+                                               start_value=start_positions[joints_names.index('LHipYawPitch')])
             SldLShoulderRoll = self.make_slider(name='LShoulderRoll', point=Point(50, 355),
-                                             sld_range=joints_ranges[joints_names.index('LShoulderRoll')])
+                                                sld_range=joints_ranges[joints_names.index('LShoulderRoll')],
+                                                start_value=start_positions[joints_names.index('LShoulderRoll')])
             SldRShoulderRoll = self.make_slider(name='RShoulderRoll', point=Point(450, 355),
-                                             sld_range=joints_ranges[joints_names.index('RShoulderRoll')])
+                                                sld_range=joints_ranges[joints_names.index('RShoulderRoll')],
+                                                start_value=start_positions[joints_names.index('RShoulderRoll')])
             SldLElbowYaw = self.make_slider(name='LElbowYaw', point=Point(50, 465),
-                                             sld_range=joints_ranges[joints_names.index('LElbowYaw')])
+                                            sld_range=joints_ranges[joints_names.index('LElbowYaw')],
+                                            start_value=start_positions[joints_names.index('LElbowYaw')])
             SldRElbowYaw = self.make_slider(name='RElbowYaw', point=Point(450, 465),
-                                             sld_range=joints_ranges[joints_names.index('RElbowYaw')])
+                                            sld_range=joints_ranges[joints_names.index('RElbowYaw')],
+                                            start_value=start_positions[joints_names.index('RElbowYaw')])
             SldLElbowRoll = self.make_slider(name='LElbowRoll', point=Point(50, 575),
-                                             sld_range=joints_ranges[joints_names.index('LElbowRoll')])
+                                             sld_range=joints_ranges[joints_names.index('LElbowRoll')],
+                                             start_value=start_positions[joints_names.index('LElbowRoll')])
             SldRElbowRoll = self.make_slider(name='RElbowRoll', point=Point(450, 575),
-                                             sld_range=joints_ranges[joints_names.index('RElbowRoll')])
+                                             sld_range=joints_ranges[joints_names.index('RElbowRoll')],
+                                             start_value=start_positions[joints_names.index('RElbowRoll')])
             SldLWristYaw = self.make_slider(name='LWristYaw', point=Point(50, 685),
-                                             sld_range=joints_ranges[joints_names.index('LWristYaw')])
+                                            sld_range=joints_ranges[joints_names.index('LWristYaw')],
+                                            start_value=start_positions[joints_names.index('LWristYaw')])
             SldRWristYaw = self.make_slider(name='RWristYaw', point=Point(450, 685),
-                                             sld_range=joints_ranges[joints_names.index('RWristYaw')])
+                                            sld_range=joints_ranges[joints_names.index('RWristYaw')],
+                                            start_value=start_positions[joints_names.index('RWristYaw')])
             SldLHipRoll = self.make_slider(name='LHipRoll', point=Point(200, 355),
-                                             sld_range=joints_ranges[joints_names.index('LHipRoll')])
+                                           sld_range=joints_ranges[joints_names.index('LHipRoll')],
+                                           start_value=start_positions[joints_names.index('LHipRoll')])
             SldLHipPitch = self.make_slider(name='LHipPitch', point=Point(200, 465),
-                                             sld_range=joints_ranges[joints_names.index('LHipPitch')])
+                                            sld_range=joints_ranges[joints_names.index('LHipPitch')],
+                                            start_value=start_positions[joints_names.index('LHipPitch')])
             SldLKneePitch = self.make_slider(name='LKneePitch', point=Point(200, 575),
-                                             sld_range=joints_ranges[joints_names.index('LKneePitch')])
+                                             sld_range=joints_ranges[joints_names.index('LKneePitch')],
+                                             start_value=start_positions[joints_names.index('LKneePitch')])
             SldLAnklePitch = self.make_slider(name='LAnklePitch', point=Point(200, 685),
-                                             sld_range=joints_ranges[joints_names.index('LAnklePitch')])
+                                              sld_range=joints_ranges[joints_names.index('LAnklePitch')],
+                                              start_value=start_positions[joints_names.index('LAnklePitch')])
             SldLAnkleRoll = self.make_slider(name='LAnkleRoll', point=Point(200, 795),
-                                             sld_range=joints_ranges[joints_names.index('LAnkleRoll')])
+                                             sld_range=joints_ranges[joints_names.index('LAnkleRoll')],
+                                             start_value=start_positions[joints_names.index('LAnkleRoll')])
 
             SldRHipRoll = self.make_slider(name='RHipRoll', point=Point(325, 355),
-                                        sld_range=joints_ranges[joints_names.index('RHipRoll')])
+                                           sld_range=joints_ranges[joints_names.index('RHipRoll')],
+                                           start_value=start_positions[joints_names.index('RHipRoll')])
             SldRHipPitch = self.make_slider(name='RHipPitch', point=Point(325, 465),
-                                         sld_range=joints_ranges[joints_names.index('RHipPitch')])
+                                            sld_range=joints_ranges[joints_names.index('RHipPitch')],
+                                            start_value=start_positions[joints_names.index('RHipPitch')])
             SldRKneePitch = self.make_slider(name='RKneePitch', point=Point(325, 575),
-                                          sld_range=joints_ranges[joints_names.index('RKneePitch')])
+                                             sld_range=joints_ranges[joints_names.index('RKneePitch')],
+                                             start_value=start_positions[joints_names.index('RKneePitch')])
             SldRAnklePitch = self.make_slider(name='RAnklePitch', point=Point(325, 685),
-                                           sld_range=joints_ranges[joints_names.index('RAnklePitch')])
+                                              sld_range=joints_ranges[joints_names.index('RAnklePitch')],
+                                              start_value=start_positions[joints_names.index('RAnklePitch')])
             SldRAnkleRoll = self.make_slider(name='RAnkleRoll', point=Point(325, 795),
-                                          sld_range=joints_ranges[joints_names.index('RAnkleRoll')])
+                                             sld_range=joints_ranges[joints_names.index('RAnkleRoll')],
+                                             start_value=start_positions[joints_names.index('RAnkleRoll')])
 
         return Sliders
 
-    def make_slider(self, name='Test slider', point=Point(), sld_range=range(0, 1)):
-        sld = MySlider(self, self.buttons.apply, Point(point.x, point.y), sld_range, name)
+    def make_slider(self, name='Test slider', point=Point(), sld_range=range(0, 1), start_value=0):
+        sld = MySlider(self, self.buttons.apply, Point(point.x, point.y), sld_range, name, start_value)
         return sld
 
     def getPose(self):
-        pose = [0] * 25
+        pose = [1] * 25
         for joint in self.JointsList:
             pose[joint.num] = joint.getValue()
         return pose
@@ -175,7 +262,6 @@ class Window(QMainWindow):
             RKneePitch = Joint(SLD=self.sliders.SldRKneePitch)
             RAnklePitch = Joint(SLD=self.sliders.SldRAnklePitch)
             RAnkleRoll = Joint(SLD=self.sliders.SldRAnkleRoll)
-
 
         self.JointsList = [Joints.HeadYaw, Joints.HeadPitch, Joints.LShoulderPitch, Joints.RShoulderPitch,
                            Joints.LHipYawPitch, Joints.RHipPitch, Joints.LShoulderRoll, Joints.RShoulderRoll,

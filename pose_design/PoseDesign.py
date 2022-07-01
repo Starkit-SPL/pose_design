@@ -104,7 +104,7 @@ class PoseDesign(Node):
         positions_msg = JPOUT()
         positions_msg.indexes = range(25)
         positions_msg.positions = list(map(np.deg2rad, pose))
-        print('send:', positions_msg)
+        #print('send:', positions_msg)
         self.PublisherPose.publish(positions_msg)
 
 
