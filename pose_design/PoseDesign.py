@@ -17,9 +17,11 @@ from rclpy.logging import LoggingSeverity
 from rclpy.node import Node
 import time
 import numpy as np
+from pathlib import Path
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtGui import QColor, qGray, QImage, QPainter, QPalette,QIcon
 from PyQt5.QtCore import Qt
 
 import sys
@@ -83,6 +85,10 @@ class PoseDesign(Node):
 
     def Application_make(self, send, receive):
         self.app = QApplication(sys.argv)
+        home = Path.cwd()
+        dev_ws = Path(home, 'src', 'pose_design', 'pose_design')
+        image = Path(dev_ws, 'image.jpeg')
+        self.app.setWindowIcon(QIcon(str(image)))
         self.window = Window(send=send, receive=receive)
 
     def Application_run(self):
