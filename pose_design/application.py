@@ -2,10 +2,11 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import Qt
 from pathlib import Path
+from pose_design.interpolation import Head, LAnkle, RAnkle
 
 import sys
 
-from pose_design.my_widgets import MySlider, Point
+from pose_design.my_widgets import MySlider, Point, Limits
 
 joints_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw',
                 'LElbowRoll', 'LWristYaw', 'LHipYawPitch', 'LHipRoll', 'LHipPitch',
@@ -39,6 +40,8 @@ start_positions = [5.835615623007271e-17
                    -2.2158275214678724e-11,
                    -2.2157387036259024e-11,
                    ]
+start_positions[joints_names.index('LElbowRoll')] = -4
+start_positions[joints_names.index('RElbowRoll')] = 3
 
 # This range is for NAO5, check for NAO6
 joints_ranges = [range(-115, 115), range(-36, 28), range(-118, 118),
@@ -72,6 +75,10 @@ class Joint:
 class Window(QMainWindow):
     def __init__(self, receive, send):
         super(Window, self).__init__()
+
+        self.HeadLimits = Head
+        self.LAnkleLimits = LAnkle
+        self.RAnkleLimits = RAnkle
 
         self.send = send
         self.receive = receive
@@ -146,7 +153,8 @@ class Window(QMainWindow):
                                           start_value=start_positions[joints_names.index('HeadYaw')])
             SldHeadPitch = self.make_slider(name='HeadPitch', point=Point(275, 135),
                                             sld_range=joints_ranges[joints_names.index('HeadPitch')],
-                                            start_value=start_positions[joints_names.index('HeadPitch')])
+                                            start_value=start_positions[joints_names.index('HeadPitch')],
+                                            limits=Limits(slider=SldHeadYaw, limit=self.HeadLimits))
             SldLShoulderPitch = self.make_slider(name='LShoulderPitch', point=Point(50, 245),
                                                  sld_range=joints_ranges[joints_names.index('LShoulderPitch')],
                                                  start_value=start_positions[joints_names.index('LShoulderPitch')])
@@ -194,7 +202,8 @@ class Window(QMainWindow):
                                               start_value=start_positions[joints_names.index('LAnklePitch')])
             SldLAnkleRoll = self.make_slider(name='LAnkleRoll', point=Point(200, 795),
                                              sld_range=joints_ranges[joints_names.index('LAnkleRoll')],
-                                             start_value=start_positions[joints_names.index('LAnkleRoll')])
+                                             start_value=start_positions[joints_names.index('LAnkleRoll')],
+                                             limits=Limits(slider=SldLAnklePitch, limit=self.LAnkleLimits))
 
             SldRHipRoll = self.make_slider(name='RHipRoll', point=Point(325, 355),
                                            sld_range=joints_ranges[joints_names.index('RHipRoll')],
@@ -210,21 +219,38 @@ class Window(QMainWindow):
                                               start_value=start_positions[joints_names.index('RAnklePitch')])
             SldRAnkleRoll = self.make_slider(name='RAnkleRoll', point=Point(325, 795),
                                              sld_range=joints_ranges[joints_names.index('RAnkleRoll')],
-                                             start_value=start_positions[joints_names.index('RAnkleRoll')])
+                                             start_value=start_positions[joints_names.index('RAnkleRoll')],
+                                             limits=Limits(slider=SldRAnklePitch, limit=self.RAnkleLimits))
 
         return Sliders
 
-    def make_slider(self, name='Test slider', point=Point(), sld_range=range(0, 1), start_value=0):
-        sld = MySlider(self, self.buttons.apply, Point(point.x, point.y), sld_range, name, start_value)
+    def make_slider(self, name='Test slider', point=Point(), sld_range=range(0, 1), start_value=0, limits=None):
+        sld = MySlider(self, self.buttons.apply, Point(point.x, point.y), sld_range, name, start_value, limits)
         return sld
+
+    def check_joint_pose(self, pose, joint_pose, limits):
+        value = pose[joint_pose]
+        local_range = limits.limit.getValueRange(limits.slider.value())
+        if value >= max(local_range):
+            value = max(local_range)
+        elif value <= min(local_range):
+            value = min(local_range)
+        return value
+
 
     def getPose(self):
         pose = [1] * 25
         for joint in self.JointsList:
             pose[joint.num] = joint.getValue()
+        pose[1] = self.check_joint_pose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=self.HeadLimits))
+        pose[12] = self.check_joint_pose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=self.LAnkleLimits))
+        pose[17] = self.check_joint_pose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=self.RAnkleLimits))
         return pose
 
     def setPose(self, pose):
+        pose[1] = self.check_joint_pose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=self.HeadLimits))
+        pose[12] = self.check_joint_pose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=self.LAnkleLimits))
+        pose[17] = self.check_joint_pose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=self.RAnkleLimits))
         for joint in self.JointsList:
             joint.setValue(pose[joint.num])
 

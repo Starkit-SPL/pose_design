@@ -4,19 +4,27 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import sys
 
+
 class Point:
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
 
-class MySlider():
+class Limits:
+    def __init__(self, slider, limit):
+        self.slider = slider
+        self.limit = limit
 
-    def __init__(self, window, button_apply, point, slider_range, name, start_value):
+
+class MySlider:
+
+    def __init__(self, window, button_apply, point, slider_range, name, start_value, limits=None):
         self.window = window
         self.point = point
         self.slider_range = list(slider_range)
         self.start_value = start_value
+        self.limits = limits
         self.button_apply = button_apply
         self.name = name
         self.make_line()
@@ -29,7 +37,6 @@ class MySlider():
         self.label.move(self.point.x, self.point.y - 25)
         self.label.setText(self.name)
         self.label.adjustSize()
-
 
     def make_line(self):
         self.line = QLineEdit(self.window)
@@ -48,11 +55,11 @@ class MySlider():
         self.slider.adjustSize()
 
     def value(self):
-        return self.slider.value()
+        return int(self.line.text())
+        #return self.slider.value()
 
     def set(self, value):
         self.slider.setValue(value)
-
 
     def make_signals(self):
         self.slider.valueChanged.connect(self.updateLine)
@@ -60,16 +67,16 @@ class MySlider():
 
     def updateLine(self):
         value = self.slider.value()
-        self.line.setText(str(value))
+        if self.limits is not None:
+            local_range = self.limits.limit.getValueRange(self.limits.slider.value())
+            if value >= max(local_range):
+                value = max(local_range)
+            elif value <= min(local_range):
+                value = min(local_range)
+        self.line.setText(str(int(value)))
 
     def updateSlider(self):
         value = self.line.text()
         if int(value) not in self.slider_range:
             value = self.slider_range[0]
         self.slider.setValue(int(value))
-
-
-
-
-
-
