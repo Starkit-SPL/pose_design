@@ -88,6 +88,10 @@ class Window(QMainWindow):
 
         self.buttons = self.make_buttons()
 
+        self.label_line = QtWidgets.QLabel(self)
+        self.label_line.setGeometry(450, 790, 100, 20)
+        self.label_line.setText('File name:')
+        self.label_line.adjustSize()
         self.label = QtWidgets.QLineEdit(self)
         self.label.move(450, 810)
         self.label.setGeometry(450, 810, 100, 30)

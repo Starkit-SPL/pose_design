@@ -4,6 +4,16 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import sys
 
+'''class MyEditLine:
+    
+    def __init__(self, window, name, ):
+        self.label_line = QtWidgets.QLabel(self)
+        self.label_line.setGeometry(450, 790, 100, 20)
+        self.label_line.setText('File name:')
+        self.label_line.adjustSize()
+        self.label = QtWidgets.QLineEdit(self)
+        self.label.move(450, 810)
+        self.label.setGeometry(450, 810, 100, 30)'''
 
 class Point:
     def __init__(self, x=0, y=0):
