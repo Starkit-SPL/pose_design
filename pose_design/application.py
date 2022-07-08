@@ -76,6 +76,27 @@ class Window(QMainWindow):
     def __init__(self, receive, send):
         super(Window, self).__init__()
 
+        self._createActions()
+        self._createMenuBar()
+
+        #self._createToolBars()
+
+        #self.fileMenu.addAction()
+        '''self.TabBar = QtWidgets.QTabBar(self)
+        self.TabBar.addTab('smth')
+        self.TabBar.show()'''
+
+        #self.FirstTab.setGeometry(20, 20, 100, 30)
+        #self.FirstTab.setTabText(0, 'smth')
+        #self.FirstTab.setTabText('smth')
+        #file, _ = QtWidgets.QFileDialog.getOpenFileName(None, 'Open File', './', "Image (*.png *.jpg *jpeg)")
+        #print(file)
+        #self.FileDialog = QtWidgets.QFileDialog(self)
+        #self.FileDialog.setGeometry(0, 0, 100, 30)
+        #self.FileDialog.DialogLabel('File')
+        #self.FileDialog.setFileMode(QtWidgets.QFileDialog.directory())
+
+
         self.HeadLimits = Head
         self.LAnkleLimits = LAnkle
         self.RAnkleLimits = RAnkle
@@ -101,13 +122,55 @@ class Window(QMainWindow):
         self.sliders = self.make_sliders()
         self.joints = self.make_joints()
 
+    def _createMenuBar(self):
+        menuBar = self.menuBar()
+        # File menu
+        fileMenu = QtWidgets.QMenu("File", self)
+        menuBar.addMenu(fileMenu)
+        fileMenu.addAction(self.savePoseAction)
+        fileMenu.addAction(self.loadPoseAction)
+        # Edit menu
+        '''editMenu = menuBar.addMenu("Edit")
+        editMenu.addAction(self.copyAction)
+        editMenu.addAction(self.pasteAction)
+        editMenu.addAction(self.cutAction)'''
+        # Help menu
+
+
+    def _createActions(self):
+        self.savePoseFolder = Path.cwd()
+        self.savePoseAction = QtWidgets.QAction(self)
+        self.savePoseAction.setText("Save directory")
+        self.savePoseAction.triggered.connect(self._savePoseActionClick)
+
+        self.loadPoseFolder = Path.cwd()
+        self.loadPoseAction = QtWidgets.QAction(self)
+        self.loadPoseAction.setText("Load directory")
+        self.loadPoseAction.triggered.connect(self._loadPoseActionClick)
+
+    def _savePoseActionClick(self):
+        home = Path.cwd()
+        dialog = QtWidgets.QFileDialog(self)
+        viewMode = QtWidgets.QFileDialog.FileMode.DirectoryOnly
+        dir = dialog.getExistingDirectory(None, 'Select Save directory', str(home.parent))
+        self.savePoseFolder = dir
+
+    def _loadPoseActionClick(self):
+        home = Path.cwd()
+        dialog = QtWidgets.QFileDialog(self)
+        viewMode = QtWidgets.QFileDialog.FileMode.DirectoryOnly
+        dir = dialog.getExistingDirectory(None, 'Select Load directory', str(home.parent))
+        self.loadPoseFolder = dir
+
+
+
     def save(self):
         fn = self.label.text()
         home = Path.cwd()
         if fn is None or fn == '':
-            filename = Path(home, 'pose.txt')
+            filename = Path(self.savePoseFolder, 'pose.txt')
         else:
-            filename = Path(home, fn)
+            filename = Path(self.savePoseFolder, fn)
         pose = self.getPose()
         f = open(filename, 'w')
         for tmp in pose:
@@ -118,9 +181,9 @@ class Window(QMainWindow):
         fn = self.label.text()
         home = Path.cwd()
         if fn is None or fn == '':
-            filename = Path(home, 'pose.txt')
+            filename = Path(self.loadPoseFolder, 'pose.txt')
         else:
-            filename = Path(home, fn)
+            filename = Path(self.loadPoseFolder, fn)
         pose = [0] * 25
         f = open(filename, 'r')
         num = 0
