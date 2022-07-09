@@ -17,4 +17,4 @@ colcon build --packages-select pose_design
 
 . install/setup.bash
 
-ros2 run pose_design PoseDesign
+ros2 run pose_design pose_design

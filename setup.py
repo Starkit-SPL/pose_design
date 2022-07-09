@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-               'PoseDesign = pose_design.PoseDesign:main'
+               'pose_design = pose_design.PoseDesign:main'
         ],
     },
 )
