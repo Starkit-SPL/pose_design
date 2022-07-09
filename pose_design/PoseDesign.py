@@ -36,6 +36,7 @@ from nao_command_msgs.msg import ChestLed
 from nao_command_msgs.msg import JointStiffnesses
 from nao_command_msgs.msg import JointPositions as JPOUT
 from nao_sensor_msgs.msg import JointPositions as JPIN
+from nao_command_msgs.msg import JointStiffnesses
 
 from pose_design.application import Window
 
@@ -50,6 +51,7 @@ class PoseDesign(Node):
         data = 777
         super().__init__('PoseDesign')
         self.PublisherPose = self.create_publisher(JPOUT, '/effectors/joint_positions', 10)
+        self.PublisherStiffness = self.create_publisher(JointStiffnesses, 'effectors/joint_stiffnesses', 10)
         #self.Application_make(receive=self.receive_pose, send=self.send_pose)
         # self.SubscriptionPose = self.create_subscription(JPIN, '/sensors/joint_positions', self.receive_pose, 10)
         #self.SubscriptionPose = threading.Thread(target=self.create_subscription,
@@ -106,6 +108,10 @@ class PoseDesign(Node):
 
 
     def send_pose(self):
+        joint_msg = JointStiffnesses()
+        joint_msg.indexes = range(25)
+        joint_msg.stiffnesses = [1.0] * 25
+        self.PublisherStiffness.publish(joint_msg)
         pose = self.window.getPose()
         positions_msg = JPOUT()
         positions_msg.indexes = range(25)
