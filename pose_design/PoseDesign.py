@@ -20,8 +20,8 @@ import numpy as np
 from pathlib import Path
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtGui import QColor, qGray, QImage, QPainter, QPalette,QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget, QListWidgetItem, QScrollArea
+from PyQt5.QtGui import QColor, qGray, QImage, QPainter, QPalette, QIcon
 from PyQt5.QtCore import Qt
 
 import sys
@@ -47,25 +47,21 @@ global data
 
 class PoseDesign(Node):
     def __init__(self):
-        global data
-        data = 777
         super().__init__('PoseDesign')
         self.PublisherPose = self.create_publisher(JPOUT, '/effectors/joint_positions', 10)
         self.PublisherStiffness = self.create_publisher(JointStiffnesses, 'effectors/joint_stiffnesses', 10)
-        #self.Application_make(receive=self.receive_pose, send=self.send_pose)
+        # self.Application_make(receive=self.receive_pose, send=self.send_pose)
         # self.SubscriptionPose = self.create_subscription(JPIN, '/sensors/joint_positions', self.receive_pose, 10)
-        #self.SubscriptionPose = threading.Thread(target=self.create_subscription,
+        # self.SubscriptionPose = threading.Thread(target=self.create_subscription,
         #                                        args=(JPIN, '/sensors/joint_positions', self.rcv, 10))
-        #self.SubscriptionPose.start()
+        # self.SubscriptionPose.start()
 
-        #self.SubscriptionPose = threading.Thread(target=self.run_my_thread, args=(self.rcv, self))
-        #self.SubscriptionPose.start()
-
-
-
+        # self.SubscriptionPose = threading.Thread(target=self.run_my_thread, args=(self.rcv, self))
+        # self.SubscriptionPose.start()
 
         '''self.subscription = self.create_subscription(JPIN, '/sensors/joint_positions', self.rcv, 10)
         self.sub = self.create_subscription(Touch, 'sensors/touch', self.rcv, 10)'''
+
 
         # self.SubscriptionPose.start()
         self.Application_make(receive=self.receive_pose, send=self.send_pose)
@@ -75,15 +71,13 @@ class PoseDesign(Node):
     def run_my_thread(rcv_function, node):
         global data
         node.create_subscription(JPIN, '/sensors/joint_positions', data, 10)
-        while(True):
+        while (True):
             pass
-
 
     def rcv(self, msg):
         global data
         data = msg
         print('YES')
-
 
     def Application_make(self, send, receive):
         self.app = QApplication(sys.argv)
@@ -99,25 +93,38 @@ class PoseDesign(Node):
 
     def receive_pose(self):
         pass
-#        open('data.txt', 'w').close()
-#        os.system('ros2 topic echo /sensors/joint_positions > data.txt')
-#        print('HI')
-#        os.system('cp data.txt output.txt')
-#        os.system('rm data.txt')
 
-
+    #        open('data.txt', 'w').close()
+    #        os.system('ros2 topic echo /sensors/joint_positions > data.txt')
+    #        print('HI')
+    #        os.system('cp data.txt output.txt')
+    #        os.system('rm data.txt')
 
     def send_pose(self):
         joint_msg = JointStiffnesses()
         joint_msg.indexes = range(25)
         joint_msg.stiffnesses = [1.0] * 25
         self.PublisherStiffness.publish(joint_msg)
-        pose = self.window.getPose()
+        pose, duration = self.window.getPose()
         positions_msg = JPOUT()
         positions_msg.indexes = range(25)
         positions_msg.positions = list(map(np.deg2rad, pose))
-        #print('send:', positions_msg)
+        # print('send:', positions_msg)
         self.PublisherPose.publish(positions_msg)
+
+    '''def longPoseMaker(self, startPose, endPose, duration):
+        minimalStep = 12
+        deltaPose = [endPose[i] - startPose[i] for i in range(startPose)]
+        countSubPose = int(int(duration) / minimalStep)
+        stepSubPose = list(map(lambda t: t/countSubPose, deltaPose))
+        poses = []
+        for i in range(countSubPose):
+            poses.append(startPose + i * stepSubPose)
+        poses.append(endPose)
+
+        for tmp in poses:
+            print(tmp)'''
+
 
 
 def main(args=None):

@@ -1,24 +1,27 @@
 from PyQt5.QtWidgets import (QWidget, QSlider, QHBoxLayout,
-                             QLabel, QApplication, QLineEdit)
+                             QLabel, QApplication, QLineEdit, QLabel)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import sys
 
-'''class MyEditLine:
-    
-    def __init__(self, window, name, ):
-        self.label_line = QtWidgets.QLabel(self)
-        self.label_line.setGeometry(450, 790, 100, 20)
-        self.label_line.setText('File name:')
-        self.label_line.adjustSize()
-        self.label = QtWidgets.QLineEdit(self)
-        self.label.move(450, 810)
-        self.label.setGeometry(450, 810, 100, 30)'''
+
 
 class Point:
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
+
+
+class MyEditLine:
+    def __init__(self, window, name, state, scale, init_value=None):
+        self.name_line = QLabel(window)
+        self.name_line.setGeometry(state.x, state.y, scale.x, scale.y - 10)
+        self.name_line.setText(name)
+        self.name_line.adjustSize()
+        self.edit_line = QLineEdit(window)
+        self.edit_line.setGeometry(state.x, state.y + 20, scale.x, scale.y)
+        if init_value is not None:
+            self.edit_line.setText(str(init_value))
 
 
 class Limits:

@@ -1,12 +1,13 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget, QListWidgetItem, QScrollArea
 from pathlib import Path
 from pose_design.interpolation import Head, LAnkle, RAnkle
 
 import sys
 
-from pose_design.my_widgets import MySlider, Point, Limits
+from pose_design.my_widgets import MySlider, Point, Limits, MyEditLine
 
 joints_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw',
                 'LElbowRoll', 'LWristYaw', 'LHipYawPitch', 'LHipRoll', 'LHipPitch',
@@ -79,6 +80,14 @@ class Window(QMainWindow):
         self._createActions()
         self._createMenuBar()
 
+        self.scroll = QScrollArea(self)
+        self.scroll.setGeometry(445, 25, 150, 180)
+        self.list = QListWidget(self)
+        self.list.addItems(['first Item', 'second Item'])
+        self.list.itemDoubleClicked.connect(self.DoubleTouch)
+        self.list.itemClicked.connect(self.SingleTouch)
+        self.scroll.setWidget(self.list)
+
         #self._createToolBars()
 
         #self.fileMenu.addAction()
@@ -103,24 +112,24 @@ class Window(QMainWindow):
 
         self.send = send
         self.receive = receive
-        self.setWindowTitle("Simple program")
+        self.setWindowTitle("Pose Designer")
         self.setGeometry(1200, 250, 600, 950)  # (300, 250) от левого верхнего угла
         # ширина, высота
 
         self.buttons = self.make_buttons()
 
-        self.label_line = QtWidgets.QLabel(self)
-        self.label_line.setGeometry(450, 790, 100, 20)
-        self.label_line.setText('File name:')
-        self.label_line.adjustSize()
-        self.label = QtWidgets.QLineEdit(self)
-        self.label.move(450, 810)
-        self.label.setGeometry(450, 810, 100, 30)
-        # self.label.setText('Hi')
-        # self.label.adjustSize()
+        self.filename = MyEditLine(window=self, name='File name:', state=Point(450, 790), scale=Point(100, 30))
+
+        self.duration = MyEditLine(window=self, name='Duration:', state=Point(50, 100), scale=Point(80, 30), init_value=0)
 
         self.sliders = self.make_sliders()
         self.joints = self.make_joints()
+
+    def SingleTouch(self):
+        print('single')
+
+    def DoubleTouch(self):
+        print('double')
 
     def _createMenuBar(self):
         menuBar = self.menuBar()
@@ -165,20 +174,21 @@ class Window(QMainWindow):
 
 
     def save(self):
-        fn = self.label.text()
+        fn = self.filename.edit_line.text()
         home = Path.cwd()
         if fn is None or fn == '':
             filename = Path(self.savePoseFolder, 'pose.txt')
         else:
             filename = Path(self.savePoseFolder, fn)
-        pose = self.getPose()
+        pose, duration = self.getPose()
         f = open(filename, 'w')
         for tmp in pose:
             f.write(str(tmp) + '\n')
+        f.write(self.duration.edit_line.text() + '\n')
         f.close()
 
     def load(self):
-        fn = self.label.text()
+        fn = self.filename.edit_line.text()
         home = Path.cwd()
         if fn is None or fn == '':
             filename = Path(self.loadPoseFolder, 'pose.txt')
@@ -188,8 +198,13 @@ class Window(QMainWindow):
         f = open(filename, 'r')
         num = 0
         for line in f:
-            pose[num] = int(line)
+            if num < len(pose):
+                pose[num] = int(line)
+            else:
+                print('here')
+                self.duration.edit_line.setText(line)
             num += 1
+
         f.close()
         self.setPose(pose)
 
@@ -312,7 +327,7 @@ class Window(QMainWindow):
         pose[1] = self.check_joint_pose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=self.HeadLimits))
         pose[12] = self.check_joint_pose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=self.LAnkleLimits))
         pose[17] = self.check_joint_pose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=self.RAnkleLimits))
-        return pose
+        return pose, self.duration.edit_line.text()
 
     def setPose(self, pose):
         pose[1] = self.check_joint_pose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=self.HeadLimits))
