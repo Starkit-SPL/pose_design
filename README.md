@@ -31,4 +31,4 @@ https://github.com/Starkit-SPL/pose_design.git
 
 4. Tap open in right bottom corner, then tap trust.
 
-5. So, if you eant to load latest version, ->VCS menu->...->fetch.
+5. So, if you want to load latest version, ->VCS menu->...->fetch.
