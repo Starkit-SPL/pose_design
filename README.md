@@ -21,7 +21,7 @@ ros2 run pose_design pose_design
 
 # If you want to change packet code (on VS code)
 
-1.On VS code "Get Started" window tap clone git repository.
+1. On VS code "Get Started" window tap clone git repository.
 2. Place the URL in corresponding line on the top:
 
 https://github.com/Starkit-SPL/pose_design.git
