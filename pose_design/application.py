@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget, QListWidgetItem, QScrollArea
 from pathlib import Path
 from pose_design.interpolation import Head, LAnkle, RAnkle
+import os
+import time
 
 import sys
 
@@ -83,7 +85,6 @@ class Window(QMainWindow):
         self.scroll = QScrollArea(self)
         self.scroll.setGeometry(445, 25, 150, 180)
         self.list = QListWidget(self)
-        self.list.addItems(['first Item', 'second Item'])
         self.list.itemDoubleClicked.connect(self.DoubleTouch)
         self.list.itemClicked.connect(self.SingleTouch)
         self.scroll.setWidget(self.list)
@@ -128,8 +129,22 @@ class Window(QMainWindow):
     def SingleTouch(self):
         print('single')
 
-    def DoubleTouch(self):
-        print('double')
+    def DoubleTouch(self, item):
+        filename = item.text()
+        filePath = self.filelistPaths[filename]
+        pose = [0] * 25
+        f = open(filePath, 'r')
+        num = 0
+        for line in f:
+            if num < len(pose):
+                pose[num] = int(line)
+            else:
+                print('here')
+                self.duration.edit_line.setText(line)
+            num += 1
+
+        f.close()
+        self.setPose(pose)
 
     def _createMenuBar(self):
         menuBar = self.menuBar()
@@ -208,12 +223,47 @@ class Window(QMainWindow):
         f.close()
         self.setPose(pose)
 
+    def loadFromName(self, filename):
+        pose = [0] * 25
+        f = open(filename, 'r')
+        num = 0
+        for line in f:
+            if num < len(pose):
+                pose[num] = int(line)
+            else:
+                self.duration.edit_line.setText(line)
+            num += 1
+        f.close()
+        self.setPose(pose)
+
+    def loadDirectory(self):
+        self.list.clear()
+        self.loadDirPath = self.loadPoseFolder
+        self.filelistPaths = {}
+        self.filelistNames = []
+        for root, dirs, files in os.walk(self.loadDirPath):
+            for file in files:
+                self.filelistPaths[str(file)] = os.path.join(root, file)
+                self.filelistNames.append(file)
+        self.filelistNames.sort()
+        self.list.addItems(self.filelistNames)
+
+    def playPoses(self):
+        for file in self.filelistNames:
+            path =  self.filelistPaths[file]
+            print(path)
+            self.loadFromName(path)
+            self.send()
+            time.sleep(1)
+
     def make_buttons(self):
         class Buttons:
             apply = self.make_button('Apply', Point(50, 890))
             send_pose = self.make_button('Send Pose', Point(250, 890), self.send)
             save = self.make_button('Save', Point(450, 890), self.save)
             load = self.make_button('Load', Point(450, 850), self.load)
+            loadDir = self.make_button('loadDir', Point(50, 840), self.loadDirectory)
+            play = self.make_button('play', Point(50, 790), self.playPoses)
             # receive_pose = self.make_button('Receive Pose', Point(450, 890), self.receive)
 
         return Buttons
