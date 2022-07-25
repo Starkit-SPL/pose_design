@@ -248,6 +248,7 @@ class Window(QMainWindow):
         self.filelistNames.sort()
         self.list.addItems(self.filelistNames)
 
+
     def playPoses(self):
         for file in self.filelistNames:
             path =  self.filelistPaths[file]
