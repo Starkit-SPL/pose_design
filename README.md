@@ -4,7 +4,7 @@ The application for webots. It provides opportunities to save, load and design p
 # How to install
 cd ~/dev_ws
 
-git clone https://github.com/Starkit-SPL/PoseDesign.git src/pose_design
+git clone https://github.com/Starkit-SPL/pose_design.git src/pose_design
 
 colcon build --packages-select pose_design
 
