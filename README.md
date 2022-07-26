@@ -29,3 +29,7 @@ https://github.com/Starkit-SPL/pose_design.git
 3. Select repository folder as path_to_your_ros2_ws/src
 4. Tap open in right bottom corner, then tap trust.
 5. So, if you want to load latest version, ->VCS menu->...->fetch->Sync.
+6. To build packet write in path_to_your_ros2_ws:
+
+colcon build --packages-select pose_design
+. install/setup.bash
