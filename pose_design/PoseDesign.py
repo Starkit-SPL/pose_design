@@ -105,12 +105,13 @@ class PoseDesign(Node):
         joint_msg.indexes = range(25)
         joint_msg.stiffnesses = [1.0] * 25
         self.PublisherStiffness.publish(joint_msg)
-        pose, duration = self.window.getPose()
+        pose, poseDuration, changeDuration = self.window.getPose()
         positions_msg = JPOUT()
         positions_msg.indexes = range(25)
         positions_msg.positions = list(map(np.deg2rad, pose))
         # print('send:', positions_msg)
         self.PublisherPose.publish(positions_msg)
+
 
     '''def longPoseMaker(self, startPose, endPose, duration):
         minimalStep = 12

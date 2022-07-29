@@ -6,6 +6,7 @@ import sys
 
 
 
+
 class Point:
     def __init__(self, x=0, y=0):
         self.x = x
@@ -73,6 +74,8 @@ class MySlider:
 
     def set(self, value):
         self.slider.setValue(value)
+        self.line.setText(str(int(value)))
+        print(self.name, self.line.text())
 
     def make_signals(self):
         self.slider.valueChanged.connect(self.updateLine)

@@ -121,7 +121,8 @@ class Window(QMainWindow):
 
         self.filename = MyEditLine(window=self, name='File name:', state=Point(450, 790), scale=Point(100, 30))
 
-        self.duration = MyEditLine(window=self, name='Duration:', state=Point(50, 100), scale=Point(80, 30), init_value=0)
+        self.poseDuration = MyEditLine(window=self, name='poseDuration:', state=Point(50, 100), scale=Point(80, 30), init_value=0)
+        self.changeDuration = MyEditLine(window=self, name='changeDuration:', state=Point(50, 30), scale=Point(80, 30), init_value=0)
 
         self.sliders = self.make_sliders()
         self.joints = self.make_joints()
@@ -136,15 +137,19 @@ class Window(QMainWindow):
         f = open(filePath, 'r')
         num = 0
         for line in f:
-            if num < len(pose):
+            if num < len(pose) - 1:
                 pose[num] = int(line)
-            else:
-                print('here')
-                self.duration.edit_line.setText(line)
+            elif num == len(pose):
+                pD = int(line)
+            elif num == len(pose) + 1:
+                cD = int(line)
             num += 1
-
         f.close()
-        self.setPose(pose)
+        pose_ = {'pose': pose, 'poseDuration': pD, 'changeDuration': cD}
+        self.setPose(pose_)
+
+    def doubleTouchPlay(self):
+        pass
 
     def _createMenuBar(self):
         menuBar = self.menuBar()
@@ -195,11 +200,12 @@ class Window(QMainWindow):
             filename = Path(self.savePoseFolder, 'pose.txt')
         else:
             filename = Path(self.savePoseFolder, fn)
-        pose, duration = self.getPose()
+        pose, poseDuration, changeDuration = self.getPose()
         f = open(filename, 'w')
         for tmp in pose:
             f.write(str(tmp) + '\n')
-        f.write(self.duration.edit_line.text() + '\n')
+        f.write(poseDuration + '\n')
+        f.write(changeDuration + '\n')
         f.close()
 
     def load(self):
@@ -213,28 +219,48 @@ class Window(QMainWindow):
         f = open(filename, 'r')
         num = 0
         for line in f:
-            if num < len(pose):
+            if num < len(pose) - 1:
                 pose[num] = int(line)
-            else:
-                print('here')
-                self.duration.edit_line.setText(line)
+            elif num == len(pose):
+                pD = int(line)
+            elif num == len(pose) + 1:
+                cD = int(line)
             num += 1
-
         f.close()
-        self.setPose(pose)
+        pose_ = {'pose': pose, 'poseDuration': pD, 'changeDuration': cD}
+        self.setPose(pose_)
 
     def loadFromName(self, filename):
         pose = [0] * 25
         f = open(filename, 'r')
         num = 0
         for line in f:
-            if num < len(pose):
+            if num < len(pose) - 1:
                 pose[num] = int(line)
-            else:
-                self.duration.edit_line.setText(line)
+            elif num == len(pose):
+                pD = int(line)
+            elif num == len(pose) + 1:
+                cD = int(line)
             num += 1
         f.close()
-        self.setPose(pose)
+        pose_ = {'pose': pose, 'poseDuration': pD, 'changeDuration': cD}
+        self.setPose(pose_)
+
+    def readWritePose(self, filename, arr):
+        pose = [0] * 25
+        f = open(filename, 'r')
+        num = 0
+        for line in f:
+            if num < len(pose) - 1:
+                pose[num] = int(line)
+            elif num == len(pose):
+                pD = int(line)
+            elif num == len(pose) + 1:
+                cD = int(line)
+            num += 1
+        f.close()
+        pose_ = {'pose': pose, 'poseDuration': pD, 'changeDuration': cD}
+        arr.append(pose_)
 
     def loadDirectory(self):
         self.list.clear()
@@ -248,14 +274,33 @@ class Window(QMainWindow):
         self.filelistNames.sort()
         self.list.addItems(self.filelistNames)
 
+    def setSendSleep(self, pose_, dur):
+        self.setPose(pose_)
+        print(pose_['pose'])
+        self.send()
+        time.sleep(dur)
+
+
+
 
     def playPoses(self):
+        arr = []
         for file in self.filelistNames:
             path =  self.filelistPaths[file]
-            print(path)
-            self.loadFromName(path)
-            self.send()
-            time.sleep(1)
+            self.readWritePose(path, arr)
+        
+        self.setSendSleep(arr[0], int(arr[0]['poseDuration'])/1000)
+        for i in range(len(arr) - 1):
+            cur = arr[i]
+            next = arr[i + 1]
+            delta = [next['pose'][j] - cur['pose'][j] for j in range(len(cur['pose']))]
+            n = int(cur['changeDuration']) // 12
+            dPose = list(map(lambda t: t / n, delta))
+            for q in range(n - 1):
+                cur['pose'] = [cur['pose'][j] + dPose[j] for j in range(len(dPose))]
+                self.setSendSleep(cur, 12/1000)
+            self.setSendSleep(next, int(next['poseDuration'])/1000)
+
 
     def make_buttons(self):
         class Buttons:
@@ -378,14 +423,19 @@ class Window(QMainWindow):
         pose[1] = self.check_joint_pose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=self.HeadLimits))
         pose[12] = self.check_joint_pose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=self.LAnkleLimits))
         pose[17] = self.check_joint_pose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=self.RAnkleLimits))
-        return pose, self.duration.edit_line.text()
+        return pose, self.poseDuration.edit_line.text(), self.changeDuration.edit_line.text()
 
-    def setPose(self, pose):
+    def setPose(self, pose_):
+        pose = pose_['pose']
+        poseDuration = pose_['poseDuration']
+        changeDuration = pose_['changeDuration']
         pose[1] = self.check_joint_pose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=self.HeadLimits))
         pose[12] = self.check_joint_pose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=self.LAnkleLimits))
         pose[17] = self.check_joint_pose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=self.RAnkleLimits))
         for joint in self.JointsList:
             joint.setValue(pose[joint.num])
+        self.poseDuration.edit_line.setText(str(poseDuration))
+        self.changeDuration.edit_line.setText(str(changeDuration))
 
     def make_joints(self):
         class Joints:
