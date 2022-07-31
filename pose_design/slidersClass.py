@@ -1,5 +1,6 @@
-from pose_design.constants import jointsNames, jointsRanges, startPositions
+from pose_design.constants import jointsNames, jointsRanges, startPositions, Head, RAnkle, LAnkle
 from pose_design.myWidgets import Point, Limits
+
 
 
 def _makeSliders(cls):
@@ -10,7 +11,7 @@ def _makeSliders(cls):
             SldHeadPitch = cls.makeSlider(name='HeadPitch', point=Point(275, 135),
                                             sldRange=jointsRanges[jointsNames.index('HeadPitch')],
                                             startValue=startPositions[jointsNames.index('HeadPitch')],
-                                            limits=Limits(slider=SldHeadYaw, limit=cls.HeadLimits))
+                                            limits=Limits(slider=SldHeadYaw, limit=Head))
             SldLShoulderPitch = cls.makeSlider(name='LShoulderPitch', point=Point(50, 245),
                                                  sldRange=jointsRanges[jointsNames.index('LShoulderPitch')],
                                                  startValue=startPositions[jointsNames.index('LShoulderPitch')])
@@ -59,7 +60,7 @@ def _makeSliders(cls):
             SldLAnkleRoll = cls.makeSlider(name='LAnkleRoll', point=Point(200, 795),
                                              sldRange=jointsRanges[jointsNames.index('LAnkleRoll')],
                                              startValue=startPositions[jointsNames.index('LAnkleRoll')],
-                                             limits=Limits(slider=SldLAnklePitch, limit=cls.LAnkleLimits))
+                                             limits=Limits(slider=SldLAnklePitch, limit=LAnkle))
             SldRHipRoll = cls.makeSlider(name='RHipRoll', point=Point(325, 355),
                                            sldRange=jointsRanges[jointsNames.index('RHipRoll')],
                                            startValue=startPositions[jointsNames.index('RHipRoll')])
@@ -75,6 +76,6 @@ def _makeSliders(cls):
             SldRAnkleRoll = cls.makeSlider(name='RAnkleRoll', point=Point(325, 795),
                                              sldRange=jointsRanges[jointsNames.index('RAnkleRoll')],
                                              startValue=startPositions[jointsNames.index('RAnkleRoll')],
-                                             limits=Limits(slider=SldRAnklePitch, limit=cls.RAnkleLimits))
+                                             limits=Limits(slider=SldRAnklePitch, limit=RAnkle))
 
         return Sliders

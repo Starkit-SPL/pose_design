@@ -21,7 +21,7 @@ class Window(QMainWindow):
         _createActions(self)
         _createMenuBar(self)
         _makeScrollArea(self)
-        _makeButtons(self)
+        self.buttons = _makeButtons(self)
         _makeEditLines(self)
         self.sliders = _makeSliders(self)
         self.joints = _makeJoints(self)
