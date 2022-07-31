@@ -1,85 +1,79 @@
-from PyQt5.QtWidgets import (QWidget, QSlider, QHBoxLayout,
-                             QLabel, QApplication, QLineEdit, QLabel)
+from PyQt5.QtWidgets import QSlider, QLabel, QLineEdit, QLabel
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
-import sys
 
-
-
-
+# pair (x, y)
 class Point:
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
-
+# line with label
 class MyEditLine:
-    def __init__(self, window, name, state, scale, init_value=None):
-        self.name_line = QLabel(window)
-        self.name_line.setGeometry(state.x, state.y, scale.x, scale.y - 10)
-        self.name_line.setText(name)
-        self.name_line.adjustSize()
+    def __init__(self, window, name, state, scale, initValue=None):
+        self.nameLine = QLabel(window)
+        self.nameLine.setGeometry(state.x, state.y, scale.x, scale.y - 10)
+        self.nameLine.setText(name)
+        self.nameLine.adjustSize()
         self.edit_line = QLineEdit(window)
         self.edit_line.setGeometry(state.x, state.y + 20, scale.x, scale.y)
-        if init_value is not None:
-            self.edit_line.setText(str(init_value))
+        if initValue is not None:
+            self.edit_line.setText(str(initValue))
 
-
+# slider with current limits
 class Limits:
     def __init__(self, slider, limit):
         self.slider = slider
         self.limit = limit
 
-
+# slider with line and label
 class MySlider:
 
-    def __init__(self, window, button_apply, point, slider_range, name, start_value, limits=None):
+    def __init__(self, window, buttonApply, point, sliderRange, name, startValue, limits=None):
         self.window = window
         self.point = point
-        self.slider_range = list(slider_range)
-        self.start_value = start_value
+        self.sliderRange = list(sliderRange)
+        self.startValue = startValue
         self.limits = limits
-        self.button_apply = button_apply
+        self.buttonApply = buttonApply
         self.name = name
-        self.make_line()
-        self.make_name()
-        self.make_slider()
-        self.make_signals()
+        self.makeLine()
+        self.makeName()
+        self.makeSlider()
+        self.makeSignals()
 
-    def make_name(self):
+    def makeName(self):
         self.label = QLabel(self.window)
-        self.label.move(self.point.x, self.point.y - 25)
+        self.label.move(self.point.x, self.point.y)
         self.label.setText(self.name)
         self.label.adjustSize()
 
-    def make_line(self):
+    def makeLine(self):
         self.line = QLineEdit(self.window)
-        self.line.move(self.point.x, self.point.y + 30)
-        self.line.setText(str(int(self.start_value)))
+        self.line.move(self.point.x, self.point.y + 55)
+        self.line.setText(str(int(self.startValue)))
 
-    def make_slider(self):
+    def makeSlider(self):
         self.slider = QSlider(Qt.Horizontal, self.window)
-        self.slider.setRange(self.slider_range[0], self.slider_range[-1])
+        self.slider.setRange(self.sliderRange[0], self.sliderRange[-1])
         self.slider.setFocusPolicy(Qt.NoFocus)
         self.slider.setPageStep(5)
         self.slider.setTickPosition(QSlider.TicksBothSides)
         self.slider.move(self.point.x, self.point.y)
-        self.slider.setGeometry(self.point.x, self.point.y, 50, 20)
-        self.slider.setValue(int(self.start_value))
+        self.slider.setGeometry(self.point.x, self.point.y + 25, 50, 20)
+        self.slider.setValue(int(self.startValue))
         self.slider.adjustSize()
 
     def value(self):
         return int(self.line.text())
-        #return self.slider.value()
 
     def set(self, value):
         self.slider.setValue(value)
         self.line.setText(str(int(value)))
         print(self.name, self.line.text())
 
-    def make_signals(self):
+    def makeSignals(self):
         self.slider.valueChanged.connect(self.updateLine)
-        self.button_apply.clicked.connect(self.updateSlider)
+        self.buttonApply.clicked.connect(self.updateSlider)
 
     def updateLine(self):
         value = self.slider.value()
@@ -93,6 +87,6 @@ class MySlider:
 
     def updateSlider(self):
         value = self.line.text()
-        if int(value) not in self.slider_range:
-            value = self.slider_range[0]
+        if int(value) not in self.sliderRange:
+            value = self.sliderRange[0]
         self.slider.setValue(int(value))

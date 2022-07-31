@@ -1,7 +1,6 @@
-import matplotlib as matplotlib
 from scipy.interpolate import CubicSpline
-import matplotlib.pyplot as plt
-import numpy as np
+
+# Data from: http://doc.aldebaran.com/2-8/family/nao_technical/joints_naov6.html
 
 HeadYaw = [-119.52, -87.49, -62.45, -51.74, -43.32, -27.85, 0.0, 27.85, 43.32, 51.74, 62.45, 87.49, 119.52]
 HeadPitchMin = [-25.73, -18.91, -24.64, -27.5, -31.4, -38.5, -38.5, -38.5, -31.4, -27.5, -24.64, -18.91, -25.73]
@@ -18,7 +17,8 @@ RAnkleRollMin = [-4.3, -9.74, -12.61, -44.06, -44.06, -31.54, -2.86]
 RAnkleRollMax = [2.86, 10.31, 22.8, 22.8, 22.8, 22.8, 0.0]
 RAnkleRollRange = [-44.06, 22.80]
 
-
+# allowing values for correleted joints
+# using cubicSpline interpolation with minMax limiter
 class JointInterpolation:
     def __init__(self, x, y_bottom, y_top, range_):
         self.x = x
@@ -28,14 +28,7 @@ class JointInterpolation:
         self.cs_bottom = CubicSpline(x, y_bottom)
         self.cs_top = CubicSpline(x, y_top)
 
-    def draw(self):
-        x_test = np.linspace(min(self.x), max(self.x), 100)
-        plt.plot(x_test, list(map(self.getValueMin, x_test)), c='r')
-        plt.plot(x_test, list(map(self.getValueMax, x_test)), c='b')
-        plt.scatter(self.x, self.y_bottom, c='r')
-        plt.scatter(self.x, self.y_top, c='b')
-        plt.show()
-
+    # get min value in current position
     def getValueMin(self, x_):
         tmp = self.cs_bottom(x_)
         if tmp >= max(self.range_):
@@ -44,6 +37,7 @@ class JointInterpolation:
             tmp = min(self.range_)
         return tmp
 
+    # get max value in current position
     def getValueMax(self, x_):
         tmp = self.cs_top(x_)
         if tmp >= max(self.range_):
@@ -52,21 +46,9 @@ class JointInterpolation:
             tmp = min(self.range_)
         return tmp
 
+    # get allowed range of joint in current position(analise other joints)
     def getValueRange(self, x_):
         return [self.getValueMin(x_), self.getValueMax(x_)]
-
-
-'''x = []
-y_bottom = []
-y_top = []
-f = open('pose_design/data_to_interpolation.txt', 'r')
-for line in f:
-    tmp = list(map(float, line.split()))
-    x.append(tmp[0])
-    y_bottom.append(tmp[1])
-    y_top.append(tmp[2])
-f.close()
-print(x, y_bottom, y_top)'''
 
 Head = JointInterpolation(HeadYaw, HeadPitchMin, HeadPitchMax, HeadPitchRange)
 LAnkle = JointInterpolation(LAnklePitch, LAnkleRollMin, LAnkleRollMax, LAnkleRollRange)

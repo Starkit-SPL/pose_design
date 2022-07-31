@@ -1,138 +1,62 @@
-# Copyright 2016 Open Source Robotics Foundation, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-import rclpy
-from rclpy.logging import LoggingSeverity
-from rclpy.node import Node
-import time
 import numpy as np
 from pathlib import Path
-
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget, QListWidgetItem, QScrollArea
-from PyQt5.QtGui import QColor, qGray, QImage, QPainter, QPalette, QIcon
-from PyQt5.QtCore import Qt
-
 import sys
-import os
 
-from pose_design.my_widgets import MySlider, Point
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
 
-from std_msgs.msg import String
-from nao_sensor_msgs.msg import Touch
-from std_msgs.msg import ColorRGBA
-from nao_command_msgs.msg import ChestLed
+import rclpy
+from rclpy.node import Node
 from nao_command_msgs.msg import JointStiffnesses
 from nao_command_msgs.msg import JointPositions as JPOUT
-from nao_sensor_msgs.msg import JointPositions as JPIN
 from nao_command_msgs.msg import JointStiffnesses
 
 from pose_design.application import Window
 
-import threading
-
-global data
 
 
 class PoseDesign(Node):
     def __init__(self):
-        super().__init__('PoseDesign')
-        self.PublisherPose = self.create_publisher(JPOUT, '/effectors/joint_positions', 10)
-        self.PublisherStiffness = self.create_publisher(JointStiffnesses, 'effectors/joint_stiffnesses', 10)
-        # self.Application_make(receive=self.receive_pose, send=self.send_pose)
-        # self.SubscriptionPose = self.create_subscription(JPIN, '/sensors/joint_positions', self.receive_pose, 10)
-        # self.SubscriptionPose = threading.Thread(target=self.create_subscription,
-        #                                        args=(JPIN, '/sensors/joint_positions', self.rcv, 10))
-        # self.SubscriptionPose.start()
+        super().__init__('pose_design') # make node
+        self.PublisherPose = self.create_publisher(JPOUT, '/effectors/joint_positions', 10) # position publisher
+        self.PublisherStiffness = self.create_publisher(JointStiffnesses,
+                                                        'effectors/joint_stiffnesses', 10) # stiffness publisher
+        self.applicationMake(send=self.send_pose) 
+        self.applicationRun()
 
-        # self.SubscriptionPose = threading.Thread(target=self.run_my_thread, args=(self.rcv, self))
-        # self.SubscriptionPose.start()
+    # make window appliction with icon and window
+    def applicationMake(self, send):
+        self.app = QApplication(sys.argv) # make application
+        image = Path(Path(Path.cwd(), 'src', 'pose_design', 'pose_design'), 'image.jpeg') # image path
+        self.app.setWindowIcon(QIcon(str(image))) # set icon
+        self.window = Window(send=send) # make window
 
-        '''self.subscription = self.create_subscription(JPIN, '/sensors/joint_positions', self.rcv, 10)
-        self.sub = self.create_subscription(Touch, 'sensors/touch', self.rcv, 10)'''
+    # start gui
+    def applicationRun(self):
+        self.window.show() 
+        sys.exit(self.app.exec_())  # correct exit
 
-
-        # self.SubscriptionPose.start()
-        self.Application_make(receive=self.receive_pose, send=self.send_pose)
-        self.Application_run()
-
-    @staticmethod
-    def run_my_thread(rcv_function, node):
-        global data
-        node.create_subscription(JPIN, '/sensors/joint_positions', data, 10)
-        while (True):
-            pass
-
-    def rcv(self, msg):
-        global data
-        data = msg
-        print('YES')
-
-    def Application_make(self, send, receive):
-        self.app = QApplication(sys.argv)
-        home = Path.cwd()
-        dev_ws = Path(home, 'src', 'pose_design', 'pose_design')
-        image = Path(dev_ws, 'image.jpeg')
-        self.app.setWindowIcon(QIcon(str(image)))
-        self.window = Window(send=send, receive=receive)
-
-    def Application_run(self):
-        self.window.show()
-        sys.exit(self.app.exec_())  # корректное завершение
-
-    def receive_pose(self):
-        pass
-
-    #        open('data.txt', 'w').close()
-    #        os.system('ros2 topic echo /sensors/joint_positions > data.txt')
-    #        print('HI')
-    #        os.system('cp data.txt output.txt')
-    #        os.system('rm data.txt')
-
+    # send pose to robot's topics from window 
     def send_pose(self):
         joint_msg = JointStiffnesses()
         joint_msg.indexes = range(25)
         joint_msg.stiffnesses = [1.0] * 25
-        self.PublisherStiffness.publish(joint_msg)
-        pose, poseDuration, changeDuration = self.window.getPose()
+        self.PublisherStiffness.publish(joint_msg) # make stiffness 1
+        pose = self.window.getPose()[0]
         positions_msg = JPOUT()
         positions_msg.indexes = range(25)
         positions_msg.positions = list(map(np.deg2rad, pose))
-        # print('send:', positions_msg)
-        self.PublisherPose.publish(positions_msg)
+        self.PublisherPose.publish(positions_msg) # sending
 
 
-    '''def longPoseMaker(self, startPose, endPose, duration):
-        minimalStep = 12
-        deltaPose = [endPose[i] - startPose[i] for i in range(startPose)]
-        countSubPose = int(int(duration) / minimalStep)
-        stepSubPose = list(map(lambda t: t/countSubPose, deltaPose))
-        poses = []
-        for i in range(countSubPose):
-            poses.append(startPose + i * stepSubPose)
-        poses.append(endPose)
-
-        for tmp in poses:
-            print(tmp)'''
 
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = PoseDesign()
+    node = PoseDesign() # make node
     try:
-        rclpy.spin(node)
+        rclpy.spin(node) # run node
     except KeyboardInterrupt:
         pass
     node.destroy_node()
