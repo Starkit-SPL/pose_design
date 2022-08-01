@@ -1,14 +1,15 @@
 from PyQt5.QtWidgets import QSlider, QLabel, QLineEdit, QLabel
 from PyQt5.QtCore import Qt
 
-# pair (x, y)
 class Point:
+    """pair (x, y)"""
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
-# line with label
 class MyEditLine:
+    """line with label"""
+    
     def __init__(self, window, name, state, scale, initValue=None):
         self.nameLine = QLabel(window)
         self.nameLine.setGeometry(state.x, state.y, scale.x, scale.y - 10)
@@ -19,14 +20,14 @@ class MyEditLine:
         if initValue is not None:
             self.edit_line.setText(str(initValue))
 
-# slider with current limits
 class Limits:
+    """slider with current limits"""
+    
     def __init__(self, slider, limit):
         self.slider = slider
         self.limit = limit
-
-# slider with line and label
 class MySlider:
+    """slider with line and label"""
 
     def __init__(self, window, buttonApply, point, sliderRange, name, startValue, limits=None):
         self.window = window

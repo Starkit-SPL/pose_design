@@ -9,7 +9,7 @@ from pose_design.myWidgets import MySlider, Point, Limits
 from pose_design.jointsClass import _makeJoints
 from pose_design.slidersClass import _makeSliders
 from pose_design.makers import _createActions, _createMenuBar, _makeScrollArea, _makeButtons, _makeEditLines
-from pose_design.constants import Head, LAnkle, RAnkle
+from pose_design.interpolation import Head, LAnkle, RAnkle
 
 class Window(QMainWindow):
     def __init__(self, send):
@@ -30,6 +30,7 @@ class Window(QMainWindow):
         pass
     
     def readPoseFromFile(self, filename):
+        """get joints positions and durations from path"""
         pose = [0] * 25
         f = open(filename, 'r')
         num = 0
@@ -76,6 +77,7 @@ class Window(QMainWindow):
         self.loadPoseFolder = dir
 
     def save(self):
+        """click on save button"""
         fn = self.filename.edit_line.text()
         if fn is None or fn == '':
             filename = Path(self.savePoseFolder, 'pose.txt')
@@ -90,6 +92,7 @@ class Window(QMainWindow):
         f.close()
 
     def load(self):
+        """click on load button"""
         fn = self.filename.edit_line.text()
         if fn is None or fn == '':
             filename = Path(self.loadPoseFolder, 'pose.txt')
@@ -98,6 +101,7 @@ class Window(QMainWindow):
         self.setPose(self.readPoseFromFile(filename=filename))
 
     def loadDirectory(self):
+        """click on loadDir button"""
         self.list.clear()
         self.loadDirPath = self.loadPoseFolder
         self.filelistPaths = {}
@@ -146,6 +150,7 @@ class Window(QMainWindow):
         return sld
 
     def checkJointPose(self, pose, jointPose, limits):
+        """check joints onto allowed interval"""
         value = pose[jointPose]
         local_range = limits.limit.getValueRange(limits.slider.value())
         if value >= max(local_range):
@@ -155,7 +160,8 @@ class Window(QMainWindow):
         return value
 
     def getPose(self):
-        pose = [1] * 25
+        """get values from sliders and durations from GUI"""
+        pose = [0] * 25
         for joint in self.JointsList:
             pose[joint.num] = joint.getValue()
         pose[1] = self.checkJointPose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=Head))
@@ -164,6 +170,7 @@ class Window(QMainWindow):
         return pose, self.poseDuration.edit_line.text(), self.changeDuration.edit_line.text()
 
     def setPose(self, pose_):
+        """set sliders and durations on GUI"""
         pose = pose_['pose']
         poseDuration = pose_['poseDuration']
         changeDuration = pose_['changeDuration']

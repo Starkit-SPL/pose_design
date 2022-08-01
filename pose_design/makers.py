@@ -1,17 +1,17 @@
 from pathlib import Path
 
-from PyQt5.QtWidgets import  QListWidget, QScrollArea
+from PyQt5.QtWidgets import QListWidget, QScrollArea
 from PyQt5 import QtWidgets
 
 from pose_design.myWidgets import Point, MyEditLine
 
 
 def _createMenuBar(cls):
-        menuBar = cls.menuBar()
-        fileMenu = QtWidgets.QMenu("File", cls)
-        menuBar.addMenu(fileMenu)
-        fileMenu.addAction(cls.savePoseAction)
-        fileMenu.addAction(cls.loadPoseAction)
+    menuBar = cls.menuBar()
+    fileMenu = QtWidgets.QMenu("File", cls)
+    menuBar.addMenu(fileMenu)
+    fileMenu.addAction(cls.savePoseAction)
+    fileMenu.addAction(cls.loadPoseAction)
 
 
 def _createActions(cls):
@@ -24,7 +24,8 @@ def _createActions(cls):
     cls.loadPoseAction = QtWidgets.QAction(cls)
     cls.loadPoseAction.setText("Load directory")
     cls.loadPoseAction.triggered.connect(cls._loadPoseActionClick)
-    
+
+
 def _makeScrollArea(cls):
     cls.scroll = QScrollArea(cls)
     cls.scroll.setGeometry(445, 25, 150, 180)
@@ -32,13 +33,15 @@ def _makeScrollArea(cls):
     cls.list.itemDoubleClicked.connect(cls.DoubleTouch)
     cls.list.itemClicked.connect(cls.SingleTouch)
     cls.scroll.setWidget(cls.list)
-    
+
+
 def _makeEditLines(cls):
-    cls.filename = MyEditLine(window=cls, name='File name:', state=Point(450, 790), scale=Point(100, 30))
-    cls.poseDuration = MyEditLine(window=cls, name='poseDuration:', state=Point(50, 100), 
-                                       scale=Point(80, 30), initValue=0)
+    cls.filename = MyEditLine(
+        window=cls, name='File name:', state=Point(450, 790), scale=Point(100, 30))
+    cls.poseDuration = MyEditLine(window=cls, name='poseDuration:', state=Point(50, 100),
+                                  scale=Point(80, 30), initValue=0)
     cls.changeDuration = MyEditLine(window=cls, name='changeDuration:', state=Point(50, 30),
-                                         scale=Point(80, 30),initValue=0)
+                                    scale=Point(80, 30), initValue=0)
 
 
 def _makeButtons(cls):
