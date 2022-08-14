@@ -70,7 +70,6 @@ class MySlider:
     def set(self, value):
         self.slider.setValue(value)
         self.line.setText(str(int(value)))
-        print(self.name, self.line.text())
 
     def makeSignals(self):
         self.slider.valueChanged.connect(self.updateLine)
