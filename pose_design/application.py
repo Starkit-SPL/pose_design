@@ -134,7 +134,7 @@ class Window(QMainWindow):
             dPose = list(map(lambda t: t / n, delta))
             for q in range(n - 1):
                 cur['pose'] = [cur['pose'][j] + dPose[j] for j in range(len(dPose))]
-                self.setSendSleep(cur, 1)
+                self.setSendSleep(cur, 1/1000)
             self.setSendSleep(next, int(next['poseDuration'])/1000)
 
     def makeButton(self, name='Test button', point=Point(), signal=None):
