@@ -10,6 +10,7 @@ from pose_design.jointsClass import _makeJoints
 from pose_design.slidersClass import _makeSliders
 from pose_design.makers import _createActions, _createMenuBar, _makeScrollArea, _makeButtons, _makeEditLines
 from pose_design.interpolation import Head, LAnkle, RAnkle
+from pose_design.constants import jointsRanges, jointsNames
 
 class Window(QMainWindow):
     def __init__(self, send):
@@ -112,7 +113,7 @@ class Window(QMainWindow):
                 self.filelistNames.append(file)
         self.filelistNames.sort()
         self.list.addItems(self.filelistNames)
-
+        
     def setSendSleep(self, pose_, dur):
         self.setPose(pose_)
         self.send()
@@ -134,6 +135,7 @@ class Window(QMainWindow):
             dPose = list(map(lambda t: t / n, delta))
             for q in range(n - 1):
                 cur['pose'] = [cur['pose'][j] + dPose[j] for j in range(len(dPose))]
+                self.checkPoseReality(cur['pose'])
                 self.setSendSleep(cur, 1/1000)
             self.setSendSleep(next, int(next['poseDuration'])/1000)
 
@@ -159,6 +161,20 @@ class Window(QMainWindow):
         elif value <= min(local_range):
             value = min(local_range)
         return value
+    
+            
+    def checkPoseReality(self, pose):
+        pose[1] = self.checkJointPose(pose, 1, Limits(slider=self.sliders.SldHeadPitch, limit=Head))
+        pose[12] = self.checkJointPose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=LAnkle))
+        pose[17] = self.checkJointPose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=RAnkle))
+        for i in range(23):
+            cur = pose[i]
+            range_ = jointsRanges[i]
+            if cur >= max(range_):
+                cur = max(range_)
+            if cur <= min(range_):
+                cur = min(range_)
+            pose[i] = cur
 
     def getPose(self):
         """get values from sliders and durations from GUI"""
@@ -179,6 +195,6 @@ class Window(QMainWindow):
         pose[12] = self.checkJointPose(pose, 12, Limits(slider=self.sliders.SldLAnklePitch, limit=LAnkle))
         pose[17] = self.checkJointPose(pose, 17, Limits(slider=self.sliders.SldRAnklePitch, limit=RAnkle))
         for joint in self.JointsList:
-            joint.setValue(pose[joint.num])
+            joint.setValue(int(pose[joint.num]))
         self.poseDuration.edit_line.setText(str(poseDuration))
         self.changeDuration.edit_line.setText(str(changeDuration))

@@ -38,9 +38,29 @@ startPositions = [5.835615623007271e-17, - 6.631492244224546e-09, 5.462031822389
 startPositions[jointsNames.index('LElbowRoll')] = -4
 startPositions[jointsNames.index('RElbowRoll')] = 3
 
-jointsRanges = [range(-115, 115), range(-36, 28), range(-118, 118),
-                range(-17, 75), range(-118, 118), range(-87, -3), range(-103, 103),
-                range(-64, 41), range(-20, 44), range(-87, 26), range(-4, 120),
-                range(-67, 51), range(-21, 43), range(-44, 20), range(-87, 26),
-                range(-4, 120), range(-67, 51), range(-43, 21), range(-118, 118),
-                range(-75, 17), range(-118, 118), range(3, 87), range(-103, 103)]
+jointsRanges = [
+range( -112 ,  111 ),
+range( -35 ,  27 ),
+range( -115 ,  114 ),
+range( -17 ,  72 ),
+range( -115 ,  114 ),
+range( -85 ,  -4 ),
+range( -100 ,  99 ),
+range( -63 ,  39 ),
+range( -20 ,  42 ),
+range( -85 ,  25 ),
+range( -4 ,  116 ),
+range( -65 ,  49 ),
+range( -21 ,  41 ),
+range( -43 ,  19 ),
+range( -85 ,  25 ),
+range( -4 ,  116 ),
+range( -65 ,  49 ),
+range( -42 ,  20 ),
+range( -115 ,  114 ),
+range( -73 ,  16 ),
+range( -115 ,  114 ),
+range( 3 ,  84 ),
+range( -100 ,  99 ),
+]
+
